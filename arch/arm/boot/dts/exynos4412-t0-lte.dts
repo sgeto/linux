@@ -1,0 +1,19 @@
+/*
+ * Device tree source for Samsung's Exynos4412-based T0LTE board (GT-N7105)
+ *
+ * Copyright (c) 2017 Simon Shields <simon@lineageos.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation
+ */
+
+/dts-v1/;
+#include "exynos4412-t0.dtsi"
+
+/ {
+	compatible = "samsung,t0lte", "samsung,t0", "samsung,midas", "samsung,exynos4412", "samsung,exynos4";
+
+	// the only thing that will go here is modem configuration
+	// and s-pen i2c configuration
+};

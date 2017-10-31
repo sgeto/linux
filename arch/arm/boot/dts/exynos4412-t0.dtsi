@@ -1,0 +1,40 @@
+/*
+ * Device tree source for Samsung's Exynos4412-based T0 boards (GT-N7100, GT-N7105)
+ *
+ * Copyright (c) 2017 Simon Shields <simon@lineageos.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation
+ */
+
+/dts-v1/;
+#include "exynos4412-midas.dtsi"
+
+/ {
+	compatible = "samsung,t0", "samsung,midas", "samsung,exynos4412", "samsung,exynos4";
+
+	memory@40000000 {
+		device_type = "memory";
+		reg =  <0x40000000 0x80000000>;
+	};
+
+	// T0 TODO:
+	// display - ea8061 or s6evr02, determined using GPIO
+	// sensorhub
+	// touchscreen - mms152
+};
+
+&buck9_reg {
+	maxim,ena-gpios = <&gpm1 0 GPIO_ACTIVE_HIGH>;
+};
+
+&cam_io_reg {
+	gpio = <&gpm0 7 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&cam_af_reg {
+	gpio = <&gpm1 1 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};

@@ -1,0 +1,23 @@
+/*
+ * Device tree source for Samsung's Exynos4412-based C1 boards (SHV-E210S/K/L)
+ *
+ * Copyright (c) 2017 Simon Shields <simon@lineageos.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation
+ */
+
+/dts-v1/
+#include "exynos4412-galaxy-s3.dtsi"
+
+/ {
+	compatible = "samsung,c1", "samsung,midas", "samsung,exynos4412", "samsung,exynos4";
+
+	memory@40000000 {
+		device_type = "memory";
+		reg =  <0x40000000 0x80000000>;
+	};
+};
+
+

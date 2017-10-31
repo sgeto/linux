@@ -1,0 +1,164 @@
+/*
+ * Device tree source for Samsung's Exynos4412-based Galaxy S3 boards
+ *
+ * Copyright (c) 2013 Samsung Electronics Co., Ltd.
+ *	  http://www.samsung.com
+ * Copyright (c) 2017 Simon Shields <simon@lineageos.org>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation
+ */
+
+/dts-v1/;
+#include "exynos4412-midas.dtsi"
+
+// TODO: do we need to explicitly configure gpx pins used as interrupts?
+// easy way to test is by trying cm36651 driver. If it works, we don't, otherwise we do
+// does the kernel just rely on the bootloader to configure them?
+// surely it can't hurt to configure them manually
+
+/ {
+	regulators {
+		lcd_vdd3_reg: voltage-regulator-2 {
+			compatible = "regulator-fixed";
+			regulator-name = "LCD_VDD_2.2V";
+			regulator-min-microvolt = <2200000>;
+			regulator-max-microvolt = <2200000>;
+			enable-active-high;
+			gpio = <&gpc0 1 GPIO_ACTIVE_HIGH>;
+		};
+
+		ps_als_reg: voltage-regulator-5 {
+			compatible = "regulator-fixed";
+			regulator-name = "LED_A_3.0V";
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3000000>;
+			enable-active-high;
+			gpio = <&gpj0 5 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	i2c_ak8975: i2c-gpio-0 {
+		compatible = "i2c-gpio";
+		gpios = <&gpy2 4 GPIO_ACTIVE_HIGH>, <&gpy2 5 GPIO_ACTIVE_HIGH>;
+		i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ak8975@0c {
+			compatible = "asahi-kasei,ak8975";
+			reg = <0x0c>;
+			gpios = <&gpj0 7 GPIO_ACTIVE_HIGH>;
+		};
+	};
+
+	i2c_cm36651: i2c-gpio-2 {
+		compatible = "i2c-gpio";
+		gpios = <&gpf0 0 GPIO_ACTIVE_LOW>, <&gpf0 1 GPIO_ACTIVE_LOW>;
+		i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cm36651@18 {
+			compatible = "capella,cm36651";
+			reg = <0x18>;
+			interrupt-parent = <&gpx0>;
+			interrupts = <2 2>;
+			vled-supply = <&ps_als_reg>;
+		};
+	};
+};
+
+&buck9_reg {
+	maxim,ena-gpios = <&gpm0 3 GPIO_ACTIVE_HIGH>;
+};
+
+&cam_af_reg {
+	gpio = <&gpm0 4 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&cam_io_reg {
+	gpio = <&gpm0 2 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&dsi_0 {
+	vddcore-supply = <&ldo8_reg>;
+	vddio-supply = <&ldo10_reg>;
+	samsung,pll-clock-frequency = <24000000>;
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		port@1 {
+			reg = <1>;
+
+			dsi_out: endpoint {
+				remote-endpoint = <&dsi_in>;
+				samsung,burst-clock-frequency = <500000000>;
+				samsung,esc-clock-frequency = <20000000>;
+			};
+		};
+	};
+
+	// T0 uses ea8061 or s6evr02
+	panel@0 {
+		compatible = "samsung,s6e8aa0";
+		reg = <0>;
+		vdd3-supply = <&lcd_vdd3_reg>;
+		vci-supply = <&ldo25_reg>;
+		reset-gpios = <&gpy4 5 GPIO_ACTIVE_HIGH>;
+		power-on-delay= <50>;
+		reset-delay = <100>;
+		init-delay = <100>;
+		flip-horizontal;
+		flip-vertical;
+		panel-width-mm = <58>;
+		panel-height-mm = <103>;
+
+		display-timings {
+			timing-0 {
+				clock-frequency = <57153600>;
+				hactive = <720>;
+				vactive = <1280>;
+				hfront-porch = <5>;
+				hback-porch = <5>;
+				hsync-len = <5>;
+				vfront-porch = <13>;
+				vback-porch = <1>;
+				vsync-len = <2>;
+			};
+		};
+
+		port {
+			dsi_in: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+};
+
+&i2c_3 {
+	samsung,i2c-sda-delay = <100>;
+	samsung,i2c-slave-addr = <0x10>;
+	samsung,i2c-max-bus-freq = <400000>;
+	pinctrl-0 = <&i2c3_bus>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	mms114-touchscreen@48 {
+		compatible = "melfas,mms114";
+		reg = <0x48>;
+		interrupt-parent = <&gpm2>;
+		interrupts = <3 2>;
+		x-size = <720>;
+		y-size = <1280>;
+		avdd-supply = <&ldo23_reg>;
+		vdd-supply = <&ldo24_reg>;
+	};
+};
+
