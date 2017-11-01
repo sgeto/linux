@@ -19,3 +19,8 @@
 	};
 };
 
+&i2c0_bus {
+    // SCL and SDA pins are swapped
+    samsung,pins = "gpd1-1", "gpd1-0";
+};
+
