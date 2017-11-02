@@ -20,7 +20,7 @@
 
 / {
 	regulators {
-		lcd_vdd3_reg: voltage-regulator-2 {
+		lcd_vdd3_reg: voltage-regulator-10 {
 			compatible = "regulator-fixed";
 			regulator-name = "LCD_VDD_2.2V";
 			regulator-min-microvolt = <2200000>;
@@ -29,7 +29,7 @@
 			gpio = <&gpc0 1 GPIO_ACTIVE_HIGH>;
 		};
 
-		ps_als_reg: voltage-regulator-5 {
+		ps_als_reg: voltage-regulator-11 {
 			compatible = "regulator-fixed";
 			regulator-name = "LED_A_3.0V";
 			regulator-min-microvolt = <3000000>;
