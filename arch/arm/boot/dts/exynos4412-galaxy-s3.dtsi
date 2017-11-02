@@ -39,7 +39,7 @@
 		};
 	};
 
-	i2c_ak8975: i2c-gpio-0 {
+	i2c_ak8975: i2c-gpio-10 {
 		compatible = "i2c-gpio";
 		gpios = <&gpy2 4 GPIO_ACTIVE_HIGH>, <&gpy2 5 GPIO_ACTIVE_HIGH>;
 		i2c-gpio,delay-us = <2>;
@@ -53,7 +53,7 @@
 		};
 	};
 
-	i2c_cm36651: i2c-gpio-2 {
+	i2c_cm36651: i2c-gpio-11 {
 		compatible = "i2c-gpio";
 		gpios = <&gpf0 0 GPIO_ACTIVE_LOW>, <&gpf0 1 GPIO_ACTIVE_LOW>;
 		i2c-gpio,delay-us = <2>;

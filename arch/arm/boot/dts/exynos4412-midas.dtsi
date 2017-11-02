@@ -109,7 +109,7 @@
 		};
 	};
 
-	i2c_max77693: i2c-gpio-1 {
+	i2c_max77693: i2c-gpio-0 {
 		compatible = "i2c-gpio";
 		gpios = <&gpm2 0 GPIO_ACTIVE_HIGH>, <&gpm2 1 GPIO_ACTIVE_HIGH>;
 		i2c-gpio,delay-us = <2>;
@@ -155,7 +155,7 @@
 		};
 	};
 
-	i2c_max77693_fuel: i2c-gpio-3 {
+	i2c_max77693_fuel: i2c-gpio-1 {
 		compatible = "i2c-gpio";
 		gpios = <&gpf1 5 GPIO_ACTIVE_HIGH>, <&gpf1 4 GPIO_ACTIVE_HIGH>;
 		i2c-gpio,delay-us = <2>;
