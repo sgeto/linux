@@ -13,6 +13,7 @@
 
 / {
 	compatible = "samsung,c1", "samsung,midas", "samsung,exynos4412", "samsung,exynos4";
+	model = "Samsung C1 (SHV-E210K/L/S) based on MIDAS";
 
 	memory@40000000 {
 		device_type = "memory";

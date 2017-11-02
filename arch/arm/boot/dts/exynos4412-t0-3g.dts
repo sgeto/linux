@@ -13,6 +13,7 @@
 
 / {
 	compatible = "samsung,t03g", "samsung,t0", "samsung,midas", "samsung,exynos4412", "samsung,exynos4";
+	model = "Samsung T03G (GT-N7100) based on MIDAS";
 
 	// the only thing that will go here is modem configuration
 	// and s-pen i2c configuration

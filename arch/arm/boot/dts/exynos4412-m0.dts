@@ -13,6 +13,7 @@
 
 / {
 	compatible = "samsung,m0", "samsung,midas", "samsung,exynos4412", "samsung,exynos4";
+	model = "Samsung M0 (GT-I9300) based on MIDAS";
 
 	memory@40000000 {
 		device_type = "memory";
