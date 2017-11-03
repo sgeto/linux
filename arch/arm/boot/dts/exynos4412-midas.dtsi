@@ -73,6 +73,14 @@
 			status = "disabled";
 		};
 
+		wlan_reg: voltage-regulator-2 {
+			  compatible = "regulator-fixed";
+			  regulator-name = "WLAN_EN";
+			  regulator-min-microvolt = <1800000>;
+			  regulator-max-microvolt = <1800000>;
+			  gpio = <&gpj0 0 0>;
+			  enable-active-high;
+		  };
 	};
 
 	gpio-keys {
@@ -1158,8 +1166,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&sd3_clk &sd3_cmd &sd3_bus4>;
 
-	//broken-cd; TODO: is this needed?
-	non-removable;
+	broken-cd;
 
 	bus-width = <4>;
 	vmmc-supply = <&ldo21_reg>;
@@ -1167,10 +1174,14 @@
 
 	brcmf: brcmf@1 {
 		reg = <1>;
-		compatible = "brcm,brcm4329-fmac";
+		compatible = "brcm,bcm4329-fmac";
 		interrupt-parent = <&gpx2>;
 		interrupts = <5 0>;
 		interrupt-names = "host-wake";
+
+		wlan-supply = <&wlan_reg>;
+		clock-names = "32khz";
+		clocks = <&max77686 MAX77686_CLK_PMIC>;
 	};
 };
 
