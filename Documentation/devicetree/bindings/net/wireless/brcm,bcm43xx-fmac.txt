@@ -17,6 +17,8 @@ Optional properties:
 	When not specified the device will use in-band SDIO interrupts.
  - interrupt-names : name of the out-of-band interrupt, which must be set
 	to "host-wake".
+ - clocks : external 32khz clock
+ - clock-names : name of the external 32khz clock, must be "32khz"
 
 Example:
 

@@ -13,6 +13,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+#include <linux/clk.h>
 #include <linux/init.h>
 #include <linux/of.h>
 #include <linux/of_irq.h>
@@ -38,6 +39,10 @@ void brcmf_of_probe(struct device *dev, enum brcmf_bus_type bus_type,
 
 	if (of_property_read_u32(np, "brcm,drive-strength", &val) == 0)
 		sdio->drive_strength = val;
+
+	settings->clk = devm_clk_get(dev, "32khz");
+	if (IS_ERR(settings->clk))
+		settings->clk = NULL;
 
 	/* make sure there are interrupts defined in the node */
 	if (!of_find_property(np, "interrupts", NULL))
