@@ -33,6 +33,8 @@
 #include <linux/errno.h>
 #include <linux/module.h>
 #include <linux/acpi.h>
+#include <linux/regulator/consumer.h>
+#include <linux/of.h>
 #include <net/cfg80211.h>
 
 #include <defs.h>
@@ -1302,6 +1304,37 @@ static struct sdio_driver brcmf_sdmmc_driver = {
 	},
 };
 
+static void brcmf_sdio_regulator_set(int enable)
+{
+	struct device fake_dev = {
+		.of_node = NULL,
+	};
+	struct regulator *reg;
+
+	struct device_node *dn =
+		of_find_compatible_node(NULL, NULL, "brcm,bcm4329-fmac");
+
+	if (!dn) {
+		/* not using device tree */
+		return;
+	}
+
+	fake_dev.of_node = dn;
+	reg = regulator_get(&fake_dev, "wlan");
+
+	if (IS_ERR_OR_NULL(reg))
+		return;
+
+	if (enable) {
+		if (regulator_enable(reg) < 0)
+			pr_err("%s: regulator enable failed\n", __func__);
+	} else {
+		regulator_disable(reg);
+	}
+
+	regulator_put(reg);
+}
+
 void brcmf_sdio_register(void)
 {
 	int ret;
@@ -1309,11 +1342,18 @@ void brcmf_sdio_register(void)
 	ret = sdio_register_driver(&brcmf_sdmmc_driver);
 	if (ret)
 		brcmf_err("sdio_register_driver failed: %d\n", ret);
+
+	/* we might need to power on the WL_EN regulator to
+	 * get the SDIO device to show up
+	 */
+	brcmf_sdio_regulator_set(1);
 }
 
 void brcmf_sdio_exit(void)
 {
 	brcmf_dbg(SDIO, "Enter\n");
+
+	brcmf_sdio_regulator_set(0);
 
 	sdio_unregister_driver(&brcmf_sdmmc_driver);
 }

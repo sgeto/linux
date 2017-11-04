@@ -19,6 +19,7 @@ Optional properties:
 	to "host-wake".
  - clocks : external 32khz clock
  - clock-names : name of the external 32khz clock, must be "32khz"
+ - wlan-supply : regulator to enable when registering SDIO driver
 
 Example:
 
