@@ -180,6 +180,14 @@ int atags_to_fdt(void *atag_list, void *fdt, int total_space)
 					initrd_start);
 			setprop_cell(fdt, "/chosen", "linux,initrd-end",
 					initrd_start + initrd_size);
+		} else if (atag->hdr.tag == ATAG_SERIAL) {
+			setprop_cell(fdt, "/chosen", "serial-low",
+					atag->u.serialnr.low);
+			setprop_cell(fdt, "/chosen", "serial-high",
+					atag->u.serialnr.high);
+		} else if (atag->hdr.tag == ATAG_REVISION) {
+			setprop_cell(fdt, "/chosen", "system-rev",
+					atag->u.revision.rev);
 		}
 	}
 
