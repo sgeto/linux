@@ -183,6 +183,8 @@ void machine_kexec(struct kimage *image)
 	if (kexec_reinit)
 		kexec_reinit();
 
+	machine_kexec_mask_interrupts();
+
 	soft_restart(reboot_entry_phys);
 }
 
