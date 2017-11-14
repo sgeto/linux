@@ -5,8 +5,14 @@ Required properties:
 
 - reg: offset and length of the register set
 
+Optional properties:
+- clocks : Clock to ungate when kexec'ing to ensure chipid is active
+- clock-names : Should be "chipid"
+
 Example:
 	chipid@10000000 {
 		compatible = "samsung,exynos4210-chipid";
 		reg = <0x10000000 0x100>;
+		clocks = <&clock CLK_CHIPID>;
+		clock-names = "chipid";
 	};
