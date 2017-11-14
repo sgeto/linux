@@ -441,6 +441,11 @@ static void exynos_cpu_die(unsigned int cpu)
 	if (spurious)
 		pr_warn("CPU%u: %u spurious wakeup calls\n", cpu, spurious);
 }
+
+static int exynos_cpu_kill(unsigned int cpu)
+{
+	return 1;
+}
 #endif /* CONFIG_HOTPLUG_CPU */
 
 const struct smp_operations exynos_smp_ops __initconst = {
@@ -449,5 +454,6 @@ const struct smp_operations exynos_smp_ops __initconst = {
 	.smp_boot_secondary	= exynos_boot_secondary,
 #ifdef CONFIG_HOTPLUG_CPU
 	.cpu_die		= exynos_cpu_die,
+	.cpu_kill		= exynos_cpu_kill,
 #endif
 };
