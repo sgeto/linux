@@ -5,6 +5,7 @@
 // Copyright (c) 2010-2014 Samsung Electronics Co., Ltd.
 //		http://www.samsung.com
 
+#include <linux/clk.h>
 #include <linux/init.h>
 #include <linux/io.h>
 #include <linux/of.h>
@@ -16,6 +17,7 @@
 
 #include <asm/cacheflush.h>
 #include <asm/hardware/cache-l2x0.h>
+#include <asm/kexec.h>
 #include <asm/mach/arch.h>
 #include <asm/mach/map.h>
 
@@ -165,6 +167,33 @@ static void exynos_map_pmu(void)
 		pmu_base_addr = of_iomap(np, 0);
 }
 
+/*
+ * Prepare to kexec a new kernel. We need to make sure the
+ * CHIPID clock is enabled, so the new kernel can detect platform
+ * properly.
+ */
+static void exynos_kexec_reinit(void)
+{
+	struct device_node *np;
+	struct clk *chipid_clk;
+
+	pr_err("%s\n", __func__);
+
+	np = of_find_compatible_node(NULL, NULL, "samsung,exynos4210-chipid");
+	if (np == NULL)
+		return;
+
+	chipid_clk = of_clk_get_by_name(np, "chipid");
+	if (IS_ERR_OR_NULL(chipid_clk)) {
+		pr_err("Failed to get 'chipid' clk: %lu\n", PTR_ERR(chipid_clk));
+		return;
+	}
+
+	clk_prepare_enable(chipid_clk);
+
+	clk_put(chipid_clk);
+}
+
 static void __init exynos_init_irq(void)
 {
 	irqchip_init();
@@ -184,6 +213,8 @@ static void __init exynos_dt_machine_init(void)
 	 */
 	if (!IS_ENABLED(CONFIG_SMP))
 		exynos_sysram_init();
+
+	kexec_reinit = exynos_kexec_reinit;
 
 #if defined(CONFIG_SMP) && defined(CONFIG_ARM_EXYNOS_CPUIDLE)
 	if (of_machine_is_compatible("samsung,exynos4210") ||
