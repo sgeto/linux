@@ -1243,6 +1243,16 @@ static int s3c24xx_i2c_remove(struct platform_device *pdev)
 	return 0;
 }
 
+static void s3c24xx_i2c_shutdown(struct platform_device *pdev)
+{
+	struct s3c24xx_i2c *i2c = platform_get_drvdata(pdev);
+
+	// stop any pending i2c transfers
+	i2c->suspended = 1;
+	s3c24xx_i2c_stop(i2c, -ENXIO);
+}
+
+
 #ifdef CONFIG_PM_SLEEP
 static int s3c24xx_i2c_suspend_noirq(struct device *dev)
 {
@@ -1289,6 +1299,7 @@ static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
 static struct platform_driver s3c24xx_i2c_driver = {
 	.probe		= s3c24xx_i2c_probe,
 	.remove		= s3c24xx_i2c_remove,
+	.shutdown	= s3c24xx_i2c_shutdown,
 	.id_table	= s3c24xx_driver_ids,
 	.driver		= {
 		.name	= "s3c-i2c",
