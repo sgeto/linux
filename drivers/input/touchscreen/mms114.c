@@ -10,6 +10,7 @@
 #include <linux/module.h>
 #include <linux/delay.h>
 #include <linux/of.h>
+#include <linux/of_device.h>
 #include <linux/i2c.h>
 #include <linux/input/mt.h>
 #include <linux/interrupt.h>
@@ -32,6 +33,9 @@
 #define MMS114_PACKET_SIZE		0x0F
 #define MMS114_INFOMATION		0x10
 #define MMS114_TSP_REV			0xF0
+
+#define MMS152_FW_REV			0xE1
+#define MMS152_COMPAT_GROUP		0xF2
 
 /* Minimum delay time is 50us between stop and start signal of i2c */
 #define MMS114_I2C_DELAY		50
@@ -251,12 +255,27 @@ static int mms114_get_version(struct mms114_data *data)
 	u8 buf[6];
 	int error;
 
-	error = __mms114_read_reg(data, MMS114_TSP_REV, 6, buf);
-	if (error < 0)
-		return error;
+	switch (data->pdata->type) {
+	case TYPE_MMS152:
+		error = __mms114_read_reg(data, MMS152_FW_REV, 3, buf);
+		if (error < 0)
+			return error;
+		buf[3] = i2c_smbus_read_byte_data(data->client,
+			MMS152_COMPAT_GROUP);
+		if (buf[3] < 0)
+			return buf[3];
+		dev_info(dev, "TSP FW Rev: bootloader 0x%x / core 0x%x / config 0x%x, Compat group: %c\n",
+				buf[0], buf[1], buf[2], buf[3]);
+		break;
+	case TYPE_MMS114:
+		error = __mms114_read_reg(data, MMS114_TSP_REV, 6, buf);
+		if (error < 0)
+			return error;
 
-	dev_info(dev, "TSP Rev: 0x%x, HW Rev: 0x%x, Firmware Ver: 0x%x\n",
-		 buf[0], buf[1], buf[3]);
+		dev_info(dev, "TSP Rev: 0x%x, HW Rev: 0x%x, Firmware Ver: 0x%x\n",
+			 buf[0], buf[1], buf[3]);
+		break;
+	}
 
 	return 0;
 }
@@ -270,6 +289,11 @@ static int mms114_setup_regs(struct mms114_data *data)
 	error = mms114_get_version(data);
 	if (error < 0)
 		return error;
+
+	if (data->pdata->type == TYPE_MMS152) {
+		/* MMS152 has no configuration or power on registers */
+		return 0;
+	}
 
 	error = mms114_set_active(data, true);
 	if (error < 0)
@@ -391,6 +415,8 @@ static struct mms114_platform_data *mms114_parse_dt(struct device *dev)
 		return NULL;
 	}
 
+	pdata->type = (enum mms_type)of_device_get_match_data(dev);
+
 	if (of_property_read_u32(np, "x-size", &pdata->x_size)) {
 		dev_err(dev, "failed to get x-size property\n");
 		return NULL;
@@ -410,6 +436,7 @@ static struct mms114_platform_data *mms114_parse_dt(struct device *dev)
 		pdata->x_invert = true;
 	if (of_find_property(np, "y-invert", NULL))
 		pdata->y_invert = true;
+
 
 	return pdata;
 }
@@ -456,7 +483,15 @@ static int mms114_probe(struct i2c_client *client,
 	data->input_dev = input_dev;
 	data->pdata = pdata;
 
-	input_dev->name = "MELFAS MMS114 Touchscreen";
+	switch (pdata->type) {
+	case TYPE_MMS114:
+		input_dev->name = "MELFAS MMS114 Touchscreen";
+		break;
+	case TYPE_MMS152:
+		input_dev->name = "MELFAS MMS152 Touchscreen";
+		break;
+	}
+
 	input_dev->id.bustype = BUS_I2C;
 	input_dev->dev.parent = &client->dev;
 	input_dev->open = mms114_input_open;
@@ -569,7 +604,13 @@ MODULE_DEVICE_TABLE(i2c, mms114_id);
 
 #ifdef CONFIG_OF
 static const struct of_device_id mms114_dt_match[] = {
-	{ .compatible = "melfas,mms114" },
+	{
+		.compatible = "melfas,mms114",
+		.data = (void *)TYPE_MMS114,
+	}, {
+		.compatible = "melfas,mms152",
+		.data = (void *)TYPE_MMS152,
+	},
 	{ }
 };
 MODULE_DEVICE_TABLE(of, mms114_dt_match);
