@@ -164,11 +164,14 @@ dtb-$(CONFIG_ARCH_EXYNOS4) += \
 	exynos4210-trats.dtb \
 	exynos4210-universal_c210.dtb \
 	exynos4412-itop-elite.dtb \
+	exynos4412-m0.dtb \
+	exynos4412-m3.dtb \
 	exynos4412-odroidu3.dtb \
 	exynos4412-odroidx.dtb \
 	exynos4412-odroidx2.dtb \
 	exynos4412-origen.dtb \
 	exynos4412-smdk4412.dtb \
+	exynos4412-t0.dtb \
 	exynos4412-tiny4412.dtb \
 	exynos4412-trats2.dtb
 dtb-$(CONFIG_ARCH_EXYNOS5) += \
