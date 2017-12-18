@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-2.0
+/dts-v1/;
+#include "exynos4412-midas.dtsi"
+
+/ {
+	compatible = "samsung,t0", "samsung,midas", "samsung,exynos4412", "samsung,exynos4";
+	model = "Samsung T0 (GT-N7100, GT-N7105) based on Exynos4412";
+
+	memory@40000000 {
+		device_type = "memory";
+		reg =  <0x40000000 0x80000000>;
+	};
+};
+
+&buck9_reg {
+	maxim,ena-gpios = <&gpm1 0 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&cam_io_reg {
+	gpio = <&gpm0 7 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&cam_af_reg {
+	gpio = <&gpm1 1 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+
+&ldo13_reg {
+	regulator-name = "VCC_1.8V_LCD";
+	regulator-always-on;
+};
+
+&ldo25_reg {
+	regulator-name = "VCI_3.0V_LCD";
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+	status = "okay";
+};
