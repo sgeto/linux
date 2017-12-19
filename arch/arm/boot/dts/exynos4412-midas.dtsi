@@ -27,6 +27,7 @@
 	aliases {
 		i2c11 = &i2c_max77693;
 		i2c12 = &i2c_max77693_fuel;
+		i2c13 = &i2c_an30259a;
 	};
 
 	chosen {
@@ -198,6 +199,35 @@
 
 			maxim,over-heat-temp = <700>;
 			maxim,over-volt = <4500>;
+		};
+	};
+
+	i2c_an30259a: i2c-gpio-4 {
+		compatible = "i2c-gpio";
+		gpios = <&gpf2 7 GPIO_ACTIVE_HIGH>, <&gpf2 6 GPIO_ACTIVE_HIGH>;
+		i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "okay";
+
+		an30259a@30 {
+			compatible = "panasonic,an30259a";
+			reg = <0x30>;
+
+			red {
+				led-sources = <0>;
+				label = "red";
+			};
+
+			green {
+				led-sources = <1>;
+				label = "green";
+			};
+
+			blue {
+				led-sources = <2>;
+				label = "blue";
+			};
 		};
 	};
 
