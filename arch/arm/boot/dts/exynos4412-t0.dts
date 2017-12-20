@@ -38,3 +38,8 @@
 	regulator-max-microvolt = <3000000>;
 	status = "okay";
 };
+
+&touchkey_reg {
+	gpio = <&gpm0 5 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
