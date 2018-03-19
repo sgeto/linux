@@ -1,0 +1,38 @@
+Generic GPIO RF kill switch device tree binding
+
+Required properties:
+ - compatible: must be "linux,rfkill-gpio".
+ - name: user-facing name of the kill switch.
+ - type: type of the RF emitter controlled by this kill switch.
+         Valid values are:
+          "wlan" - 802.11 wireless network.
+          "bluetooth" - Bluetooth.
+          "ultrawideband" - Ultra wideband.
+          "wimax" - WiMAX.
+          "wwan" - Wireless WAN.
+          "gps" - GPS.
+          "fm" - FM radio.
+          "nfc" - NFC.
+
+At least one of the following properties must be specified:
+ - reset-gpios: GPIO that, when asserted, will enable the RF emitter
+ - shutdown-gpios: GPIO that, when asserted, will enable the RF emitter
+Both of these GPIOs are controlled simultaneously by the driver.
+
+Optional properties:
+ - clocks: Clock that is enabled before unblocking and disabled after blocking.
+
+
+Example:
+
+rfkill-gpio {
+        compatible = "linux,rfkill-gpio";
+        name = "BCM4752";
+        type = "gps";
+
+        reset-gpios = <&gpx1 1 GPIO_ACTIVE_HIGH>;
+
+        clocks = <&clock CLK_XUSBXTI>;
+};
+
+
