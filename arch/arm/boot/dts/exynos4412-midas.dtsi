@@ -106,6 +106,14 @@
 			gpio = <&gpl0 4 GPIO_ACTIVE_HIGH>;
 			enable-active-high;
 		};
+
+		vbatt_reg: voltage-regulator-9 {
+		   compatible = "regulator-fixed";
+		   regulator-name = "VBATT";
+		   regulator-min-microvolt = <5000000>;
+		   regulator-max-microvolt = <5000000>;
+		   regulator-always-on;
+		};
 	};
 
 	gpio-keys {
@@ -293,15 +301,30 @@
 	};
 
 	sound {
-		compatible = "samsung,trats2-audio";
-		samsung,i2s-controller = <&i2s0>;
-		samsung,model = "Trats2";
-		samsung,audio-codec = <&wm1811>;
+		compatible = "samsung,midas-audio";
+		i2s-controller = <&i2s0>;
+		model = "Midas";
+		mic-bias-gpios = <&gpf1 7 0>;
+		audio-codec = <&wm1811>;
 		samsung,audio-routing =
+			"HP", "HPOUT1L",
+			"HP", "HPOUT1R",
+
 			"SPK", "SPKOUTLN",
 			"SPK", "SPKOUTLP",
 			"SPK", "SPKOUTRN",
-			"SPK", "SPKOUTRP";
+			"SPK", "SPKOUTRP",
+
+			"RCV", "HPOUT2N",
+			"RCV", "HPOUT2P",
+
+			"HDMI", "LINEOUT1N",
+			"HDMI", "LINEOUT1P",
+
+			"IN1LP", "Main Mic",
+			"IN1LN", "Main Mic",
+			"IN1RP", "Sub Mic",
+			"IN1LP", "Sub Mic";
 	};
 
 	thermistor-ap {
@@ -614,11 +637,35 @@
 	wm1811: wm1811@1a {
 		compatible = "wlf,wm1811";
 		reg = <0x1a>;
-		clocks = <&pmu_system_controller 0>;
-		clock-names = "MCLK1";
-		DCVDD-supply = <&ldo3_reg>;
+		clocks = <&pmu_system_controller 0>,
+			<&max77686 MAX77686_CLK_PMIC>;
+		clock-names = "MCLK1", "MCLK2";
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		interrupt-parent = <&gpx3>;
+		interrupts = <6 IRQ_TYPE_LEVEL_HIGH>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		wlf,gpio-cfg = <0x3 0x0 0x0 0x0 0x0 0x0
+			0x0 0x8000 0x0 0x0 0x0>;
+		wlf,micbias-cfg = <0x2f 0x2b>;
+
+		wlf,lineout2-feedback;
+		wlf,lineout1-se;
+		wlf,lineout2-se;
+
+		AVDD2-supply = <&vbatt_reg>;
 		DBVDD1-supply = <&ldo3_reg>;
+		DBVDD2-supply = <&vbatt_reg>;
+		DBVDD3-supply = <&vbatt_reg>;
+		DCVDD-supply = <&ldo3_reg>;
+		CPVDD-supply = <&vbatt_reg>;
+		SPKVDD1-supply = <&vbatt_reg>;
+		SPKVDD2-supply = <&vbatt_reg>;
 		wlf,ldo1ena = <&gpj0 4 0>;
+		wlf,ldo2ena = <&gpj0 4 0>;
 	};
 };
 
