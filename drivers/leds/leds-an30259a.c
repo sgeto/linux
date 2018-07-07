@@ -77,64 +77,12 @@ struct an30259a {
 	int num_leds;
 };
 
-/*
- * When doing sloping, AN30259A only allows us
- * to set the first four bits of a 7-bit brightness
- * value, as opposed to the full 8-bit range
- * allowed in constant output mode.
- *
- * This function returns the best approximation
- * of the 8-bit brightness value in the 7-bit range
- * we have available.
- */
-static u8 an30259a_get_dutymax(u8 brightness)
-{
-	u8 duty_max, floor, ceil;
-
-	/* squash 8 bit number into 7-bit PWM range. */
-	duty_max = brightness >> 1;
-
-	/*
-	 * Bottom 3 bits are always set for DUTYMAX,
-	 * so figure out the closest value.
-	 */
-	ceil = duty_max | 0x7;
-	floor = ceil - 0x8;
-
-	/* handle underflow */
-	if (ceil < 0x8) {
-		/* if zero was requested, use zero */
-		if (!brightness)
-			return 0;
-		/* otherwise, use the lowest "on" brightness */
-		return 1;
-	}
-
-	if ((duty_max - floor) < (ceil - duty_max))
-		duty_max = floor >> 3;
-	else
-		duty_max = ceil >> 3;
-
-	return duty_max;
-}
-
-/*
- * Convert the four-bit PWM duty first to a seven-bit number with
- * the three bottom values set, and then two an eight-bit number
- * to match the full LED range in non-sloping mode.
- */
-static inline u8 an30259a_dutymax_to_brightness(u8 dutymax)
-{
-	return ((dutymax << 3) | 0x7) << 1;
-}
-
 static int an30259a_brightness_set(struct led_classdev *cdev,
 				   enum led_brightness brightness)
 {
 	struct an30259a_led *led;
 	int ret;
 	unsigned int led_on;
-	u8 dutymax;
 
 	led = container_of(cdev, struct an30259a_led, cdev);
 	mutex_lock(&led->chip->mutex);
@@ -147,24 +95,22 @@ static int an30259a_brightness_set(struct led_classdev *cdev,
 	case LED_OFF:
 		led_on &= ~LED_EN(led->num);
 		led_on &= ~LED_SLOPE(led->num);
+		led->sloping = false;
 		break;
 	default:
 		led_on |= LED_EN(led->num);
-		dutymax = an30259a_get_dutymax(brightness & 0xff);
+		if (led->sloping)
+			led_on |= LED_SLOPE(led->num);
 		ret = regmap_write(led->chip->regmap, REG_LEDCNT1(led->num),
-				   LED_DUTYMAX(dutymax) | LED_DUTYMID(dutymax));
+				   LED_DUTYMAX(0xf) | LED_DUTYMID(0xf));
 		if (ret)
 			goto error;
 		break;
 	}
+
 	ret = regmap_write(led->chip->regmap, REG_LED_ON, led_on);
 	if (ret)
 		goto error;
-
-	if (brightness == LED_OFF)
-		led->sloping = false;
-	else if (led->sloping)
-		cdev->brightness = an30259a_dutymax_to_brightness(dutymax);
 
 	ret = regmap_write(led->chip->regmap, REG_LEDCC(led->num),
 			   brightness);
@@ -180,7 +126,7 @@ static int an30259a_blink_set(struct led_classdev *cdev,
 {
 	struct an30259a_led *led;
 	int ret, num;
-	unsigned int led_on;
+	unsigned int led_on, duty;
 	unsigned long off = *delay_off, on = *delay_on;
 
 	led = container_of(cdev, struct an30259a_led, cdev);
@@ -189,18 +135,22 @@ static int an30259a_blink_set(struct led_classdev *cdev,
 	num = led->num;
 
 	/* slope time can only be a multiple of 500ms. */
-	if (off % SLOPE_RESOLUTION || on % SLOPE_RESOLUTION)
-		return -EINVAL;
+	if (off % SLOPE_RESOLUTION || on % SLOPE_RESOLUTION) {
+		ret = -EINVAL;
+		goto error;
+	}
 
-        /* up to a maximum of 7500ms. */
-        if (off > BLINK_MAX_TIME || on > BLINK_MAX_TIME)
-                return -EINVAL;
+	/* up to a maximum of 7500ms. */
+	if (off > BLINK_MAX_TIME || on > BLINK_MAX_TIME) {
+		ret = -EINVAL;
+		goto error;
+	}
 
-        /* if no blink specified, default to 1 Hz. */
+	/* if no blink specified, default to 1 Hz. */
 	if (!off && !on) {
 		*delay_off = off = 500;
-                *delay_on = on = 500;
-        }
+		*delay_on = on = 500;
+	}
 
 	/* convert into values the HW will understand. */
 	off /= SLOPE_RESOLUTION;
@@ -233,7 +183,7 @@ static int an30259a_blink_set(struct led_classdev *cdev,
 	if (ret)
 		goto error;
 
-	led_on |= LED_SLOPE(num);
+	led_on |= LED_SLOPE(num) | LED_EN(led->num);
 
 	ret = regmap_write(led->chip->regmap, REG_LED_ON, led_on);
 
