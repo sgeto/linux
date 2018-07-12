@@ -12,4 +12,5 @@ obj-y += cros_ec_sensors/
 obj-y += hid-sensors/
 obj-y += ms_sensors/
 obj-y += ssp_sensors/
+obj-y += ssp_v2/
 obj-y += st_sensors/
