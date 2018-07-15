@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /dts-v1/;
 #include "exynos4412-midas.dtsi"
+#include <dt-bindings/iio/samsung-ssp.h>
 #include <dt-bindings/leds/common.h>
 
 / {
@@ -137,6 +138,26 @@
 	};
 };
 
+&i2c_1 {
+	ssp@18 {
+		compatible = "samsung,n710x-ssp";
+		reg = <0x18>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&ssp_pins_in &ssp_pins_out>;
+
+		mcu-nrst-gpios = <&gpy2 2 GPIO_ACTIVE_HIGH>;
+		ap-mcu-int-gpios = <&gpx0 2 GPIO_ACTIVE_HIGH>;
+		mcu-ready-gpios = <&gpx2 1 GPIO_ACTIVE_HIGH>;
+		mcu-busy-gpios = <&gpx0 0 GPIO_ACTIVE_HIGH>;
+
+		samsung,sensor-positions = <SENSOR_POS_NXNYNZ /* accel */
+					SENSOR_POS_NXNYNZ /* gyro */
+					SENSOR_POS_NXNYNZ /* mag */
+					0>; /* prox */
+	};
+};
+
+
 &i2c_3 {
 	samsung,i2c-sda-delay = <100>;
 	samsung,i2c-slave-addr = <0x10>;
@@ -201,6 +222,20 @@
 			flash-max-microamp = <500000>;
 			flash-max-timeout-us = <500000>;
 		};
+	};
+};
+
+&pinctrl_1 {
+	ssp_pins_in: ssp-pins-in {
+		samsung,pins = "gpx2-1", "gpx0-0";
+		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
+		samsung,pin-func = <EXYNOS_PIN_FUNC_INPUT>;
+	};
+
+	ssp_pins_out: ssp-pins-out {
+		samsung,pins = "gpy2-2", "gpx0-2";
+		samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
+		samsung,pin-func = <EXYNOS_PIN_FUNC_OUTPUT>;
 	};
 };
 
