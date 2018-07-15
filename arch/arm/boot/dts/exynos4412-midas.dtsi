@@ -603,6 +603,13 @@
 	};
 };
 
+&i2c_1 {
+	samsung,i2c-sda-delay = <100>;
+	samsung,i2c-slave-addr = <0x10>;
+	samsung,i2c-max-bus-freq = <400000>;
+	status = "okay";
+};
+
 &i2c1_isp {
 	pinctrl-0 = <&fimc_is_i2c1>;
 	pinctrl-names = "default";
